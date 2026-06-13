@@ -48,9 +48,7 @@
             border-radius: 5px;
             margin-top: 10px;
         }
-        .table th, .table td {
-            vertical-align: middle;
-        }
+        .table th, .table td { vertical-align: middle; }
         .member-badge {
             background-color: #6610f2;
             color: white;
@@ -72,102 +70,237 @@
             padding: 0;
             font-size: 0.8rem;
         }
-        .remove-member-btn:hover {
-            color: #ff4d4d;
+        .remove-member-btn:hover { color: #ff4d4d; }
+        #syncStatus {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .sync-ok { background: #d1fae5; color: #065f46; }
+        .sync-err { background: #fee2e2; color: #991b1b; }
+        .sync-loading { background: #fef3c7; color: #92400e; }
+
+        /* ── 登入頁 ── */
+        #loginPage {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #6610f2, #e83e8c);
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .login-card h2 {
+            font-weight: 800;
+            font-size: 1.6rem;
+            color: #6610f2;
+            margin-bottom: 4px;
+        }
+        .login-card .subtitle {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #bbb;
+            font-size: 0.85rem;
+            margin: 20px 0;
+        }
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+        .invite-display {
+            background: linear-gradient(135deg, #f0e6ff, #ffe4f3);
+            border: 2px dashed #6610f2;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-top: 12px;
+        }
+        .invite-code-big {
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 6px;
+            color: #6610f2;
+            font-family: monospace;
+        }
+        .group-info-bar {
+            background: linear-gradient(135deg, #6610f2, #e83e8c);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-<div class="container text-center">
-    <div class="header-title">
-        <h1 class="display-5 fw-bold">朋友間分帳好工具</h1>
-        <p class="lead mb-0">好兄弟精準清算系統</p>
+<!-- ══════════════════════════════════════════
+     登入 / 邀請碼 頁面
+═══════════════════════════════════════════ -->
+<div id="loginPage">
+    <div class="login-card">
+        <h2>朋友間分帳好工具</h2>
+        <p class="subtitle">建立群組或輸入邀請碼加入朋友的群組</p>
+
+        <!-- 建立新群組 -->
+        <div class="mb-3">
+            <label class="form-label fw-bold text-secondary small">群組名稱（選填）</label>
+            <input type="text" id="newGroupName" class="form-control" placeholder="例：墾丁旅遊、十一月聚餐…">
+        </div>
+        <button class="btn btn-custom w-100 fw-bold py-2" onclick="createGroup()">🚀 建立新群組</button>
+
+        <!-- 建立後顯示邀請碼 -->
+        <div id="newGroupResult" style="display:none;">
+            <div class="invite-display">
+                <div class="text-muted small mb-1">你的群組邀請碼</div>
+                <div class="invite-code-big" id="createdCode">------</div>
+                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="copyCode()">📋 複製邀請碼</button>
+            </div>
+            <button class="btn btn-success w-100 fw-bold mt-3" onclick="enterGroup()">➡️ 進入群組</button>
+        </div>
+
+        <div class="divider">或加入已有群組</div>
+
+        <!-- 輸入邀請碼加入 -->
+        <div class="mb-3">
+            <label class="form-label fw-bold text-secondary small">輸入邀請碼</label>
+            <input type="text" id="joinCodeInput" class="form-control text-center fw-bold"
+                   placeholder="輸入6位邀請碼" maxlength="6"
+                   style="font-size:1.4rem; letter-spacing:4px; text-transform:uppercase;">
+        </div>
+        <div id="joinError" class="text-danger small mb-2 fw-bold" style="display:none;"></div>
+        <button class="btn btn-outline-primary w-100 fw-bold py-2" onclick="joinGroup()">🔑 加入群組</button>
     </div>
 </div>
 
-<div class="container">
-    <div class="card mb-4">
-        <div class="card-header text-dark">👥 1. 群組成員管理（可自由增減成員）</div>
-        <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-5 mb-3 mb-md-0">
-                    <div class="input-group">
-                        <input type="text" id="newMemberName" class="form-control" placeholder="輸入新成員姓名...">
-                        <button class="btn btn-outline-primary fw-bold" onclick="addMember()">➕ 新增成員</button>
-                    </div>
-                </div>
-                <div class="col-md-7">
-                    <span class="fw-bold text-secondary me-2">目前群組成員 (點擊 ✕ 可刪除)：</span>
-                    <div id="memberListArea" class="d-inline-block"></div>
-                </div>
-            </div>
+<!-- ══════════════════════════════════════════
+     主應用頁面（群組內）
+═══════════════════════════════════════════ -->
+<div id="appPage" style="display:none;">
+    <div class="container text-center">
+        <div class="header-title">
+            <h1 class="display-5 fw-bold">朋友間分帳好工具</h1>
+            <p class="lead mb-1" id="groupNameDisplay" style="display:none;"></p>
+            <span id="syncStatus" class="sync-loading">⏳ 連線中...</span>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header text-primary" id="formHeader">✍️ 2. 記帳輸入區</div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">消費日期：</label>
-                        <input type="date" id="itemDate" class="form-control">
+    <div class="container">
+        <!-- 群組資訊列 -->
+        <div class="group-info-bar">
+            <span>
+                🏷️ 群組：<strong id="groupNameBar">—</strong>
+                &nbsp;|&nbsp;
+                🔑 邀請碼：<strong id="groupCodeBar" style="letter-spacing:3px; font-family:monospace;">——</strong>
+            </span>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-light py-0 fw-bold" onclick="copyCurrentCode()">📋 複製邀請碼</button>
+                <button class="btn btn-sm btn-outline-light py-0" onclick="leaveGroup()">🚪 離開群組</button>
+            </div>
+        </div>
+
+        <!-- 成員管理 -->
+        <div class="card mb-4">
+            <div class="card-header text-dark">👥 1. 群組成員管理</div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <div class="input-group">
+                            <input type="text" id="newMemberName" class="form-control" placeholder="輸入新成員姓名...">
+                            <button class="btn btn-outline-primary fw-bold" onclick="addMember()">➕ 新增成員</button>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">消費項目/類型：</label>
-                        <input type="text" id="itemType" class="form-control">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">總金額 (TWD)：</label>
-                        <input type="number" id="totalAmount" class="form-control" placeholder="請輸入總花費">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">付款人：</label>
-                        <select id="payer" class="form-select"></select>
-                    </div>
-                    <hr>
-                    <h6 class="fw-bold text-secondary mb-3">👥 分帳權重設定</h6>
-                    <div id="dynamicWeightArea"></div>
-                    <div id="errorMsg" class="text-danger small mb-2 fw-bold" style="display:none;"></div>
-                    <div id="submitBtnArea">
-                        <button class="btn btn-custom w-100 fw-bold" onclick="addRecord()">➕ 新增此筆帳務</button>
+                    <div class="col-md-7">
+                        <span class="fw-bold text-secondary me-2">目前群組成員：</span>
+                        <div id="memberListArea" class="d-inline-block"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header text-success d-flex justify-content-between align-items-center">
-                    <span>📋 3. 當月消費明細</span>
-                    <button class="btn btn-sm btn-outline-danger py-0" onclick="clearAllData()">⚠️ 清除所有紀錄</button>
-                </div>
-                <div class="card-body" style="max-height: 380px; overflow-y: auto;">
-                    <table class="table table-sm table-striped">
-                        <thead>
-                            <tr>
-                                <th style="width: 15%">日期</th>
-                                <th style="width: 25%">項目</th>
-                                <th style="width: 15%">總額</th>
-                                <th style="width: 15%">代墊人</th>
-                                <th style="width: 20%">分帳概況</th>
-                                <th style="width: 10%">🔧</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTable"></tbody>
-                    </table>
+        <div class="row">
+            <!-- 記帳輸入區 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-primary" id="formHeader">✍️ 2. 記帳輸入區</div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">消費日期：</label>
+                            <input type="date" id="itemDate" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">消費項目/類型：</label>
+                            <input type="text" id="itemType" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">總金額 (TWD)：</label>
+                            <input type="number" id="totalAmount" class="form-control" placeholder="請輸入總花費">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">付款人：</label>
+                            <select id="payer" class="form-select"></select>
+                        </div>
+                        <hr>
+                        <h6 class="fw-bold text-secondary mb-3">👥 分帳權重設定</h6>
+                        <div id="dynamicWeightArea"></div>
+                        <div id="errorMsg" class="text-danger small mb-2 fw-bold" style="display:none;"></div>
+                        <div id="submitBtnArea">
+                            <button class="btn btn-custom w-100 fw-bold" onclick="addRecord()">➕ 新增此筆帳務</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header text-danger"></div>
-                <div class="card-body text-center">
-                    <p class="text-muted small">點擊下方按鈕，自動計算出最省手續費的還錢方法。</p>
-                    <button class="btn btn-danger w-100 fw-bold mb-3" onclick="calculateSettlement()">⚡ 開始年底/月底大清算</button>
-                    <div id="settlementResult" style="display:none;" class="text-start">
-                        <h5 class="fw-bold text-dark">💡 清算結果：</h5>
-                        <div id="resultContent"></div>
+            <!-- 消費明細 + 清算 -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header text-success d-flex justify-content-between align-items-center">
+                        <span>📋 3. 當月消費明細</span>
+                        <button class="btn btn-sm btn-outline-danger py-0" onclick="clearAllData()">⚠️ 清除所有紀錄</button>
+                    </div>
+                    <div class="card-body" style="max-height: 380px; overflow-y: auto;">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="width:15%">日期</th>
+                                    <th style="width:25%">項目</th>
+                                    <th style="width:15%">總額</th>
+                                    <th style="width:15%">代墊人</th>
+                                    <th style="width:20%">分帳概況</th>
+                                    <th style="width:10%">🔧</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header text-danger"></div>
+                    <div class="card-body text-center">
+                        <p class="text-muted small">點擊下方按鈕，自動計算出最省手續費的還錢方法。</p>
+                        <button class="btn btn-danger w-100 fw-bold mb-3" onclick="calculateSettlement()">⚡ 開始年底/月底大清算</button>
+                        <div id="settlementResult" style="display:none;" class="text-start">
+                            <h5 class="fw-bold text-dark">💡 清算結果：</h5>
+                            <div id="resultContent"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -175,70 +308,218 @@
     </div>
 </div>
 
-<script>
-    let members = JSON.parse(localStorage.getItem('sm_members'));
-    if (!members || !Array.isArray(members) || members.length === 0) {
-        members = ["冠佑", "育明", "淮宇"];
-    }
+<!-- Firebase SDK -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import { getFirestore, collection, doc, onSnapshot, setDoc, deleteDoc, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-    let txList = JSON.parse(localStorage.getItem('sm_txList')) || [];
-    let editIndex = -1;
-
-    window.onload = function () {
-        document.getElementById('itemDate').value = new Date().toISOString().split('T')[0];
-        renderMembersUI();
-        updateHistoryTable();
+    const firebaseConfig = {
+        apiKey: "AIzaSyALlP61ezFh1h8be-Em-cjAJgfrNBN1DY0",
+        authDomain: "html-final-a153e.firebaseapp.com",
+        projectId: "html-final-a153e",
+        storageBucket: "html-final-a153e.firebasestorage.app",
+        messagingSenderId: "624508654098",
+        appId: "1:624508654098:web:e8d6d0829a30690e4a3ecb"
     };
 
-    function addMember() {
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ── 狀態 ──
+    let members = [];
+    let txList = [];
+    let editIndex = -1;
+    let currentGroupCode = null;
+    let currentGroupName = "";
+    let unsubTx = null;
+    let unsubMembers = null;
+
+    // ════════════════════════════════════════
+    //  工具函式
+    // ════════════════════════════════════════
+
+    function generateCode() {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        let code = "";
+        for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+        return code;
+    }
+
+    function setStatus(msg, type) {
+        const el = document.getElementById('syncStatus');
+        el.textContent = msg;
+        el.className = 'sync-' + type;
+    }
+
+    function groupTxCol() { return collection(db, "groups", currentGroupCode, "transactions"); }
+    function groupMembersDoc() { return doc(db, "groups", currentGroupCode, "config", "members"); }
+    function groupInfoDoc() { return doc(db, "groups", currentGroupCode, "config", "info"); }
+
+    // ════════════════════════════════════════
+    //  登入頁：建立群組
+    // ════════════════════════════════════════
+    window.createGroup = async function() {
+        const name = document.getElementById('newGroupName').value.trim() || "新群組";
+        const code = generateCode();
+
+        // 寫入 Firestore（確保群組存在）
+        await setDoc(doc(db, "groups", code, "config", "info"), {
+            name: name,
+            code: code,
+            createdAt: new Date().toISOString()
+        });
+        await setDoc(doc(db, "groups", code, "config", "members"), { list: [] });
+
+        document.getElementById('createdCode').textContent = code;
+        document.getElementById('newGroupResult').style.display = 'block';
+        window._pendingCode = code;
+        window._pendingName = name;
+    };
+
+    window.copyCode = function() {
+        const code = document.getElementById('createdCode').textContent;
+        navigator.clipboard.writeText(code).then(() => alert("✅ 邀請碼已複製：" + code));
+    };
+
+    window.enterGroup = function() {
+        loadGroup(window._pendingCode, window._pendingName);
+    };
+
+    // ════════════════════════════════════════
+    //  登入頁：輸入邀請碼加入
+    // ════════════════════════════════════════
+    window.joinGroup = async function() {
+        const raw = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+        const errEl = document.getElementById('joinError');
+        errEl.style.display = 'none';
+
+        if (raw.length !== 6) {
+            errEl.textContent = "⚠️ 邀請碼必須是 6 位字元！";
+            errEl.style.display = 'block';
+            return;
+        }
+
+        // 驗證群組是否存在
+        const infoSnap = await getDoc(doc(db, "groups", raw, "config", "info"));
+        if (!infoSnap.exists()) {
+            errEl.textContent = "❌ 找不到此邀請碼的群組，請確認後再試！";
+            errEl.style.display = 'block';
+            return;
+        }
+
+        const info = infoSnap.data();
+        loadGroup(raw, info.name || "群組");
+    };
+
+    // ════════════════════════════════════════
+    //  進入群組
+    // ════════════════════════════════════════
+    function loadGroup(code, name) {
+        currentGroupCode = code;
+        currentGroupName = name;
+
+        // 儲存到 sessionStorage（重整不會被踢出）
+        sessionStorage.setItem('groupCode', code);
+        sessionStorage.setItem('groupName', name);
+
+        // 切換頁面
+        document.getElementById('loginPage').style.display = 'none';
+        document.getElementById('appPage').style.display = 'block';
+
+        // 更新 UI
+        document.getElementById('groupNameDisplay').textContent = name;
+        document.getElementById('groupNameBar').textContent = name;
+        document.getElementById('groupCodeBar').textContent = code;
+
+        // 初始化
+        document.getElementById('itemDate').value = new Date().toISOString().split('T')[0];
+        setStatus("⏳ 連線中...", "loading");
+
+        // 取消舊訂閱（避免重複）
+        if (unsubTx) unsubTx();
+        if (unsubMembers) unsubMembers();
+
+        // 即時監聽帳務
+        unsubTx = onSnapshot(groupTxCol(), (snapshot) => {
+            txList = [];
+            snapshot.forEach(d => txList.push({ id: d.id, ...d.data() }));
+            txList.sort((a, b) => (a.date > b.date ? 1 : -1));
+            updateHistoryTable();
+            setStatus("✅ 已同步", "ok");
+        }, () => setStatus("❌ 連線失敗", "err"));
+
+        // 即時監聽成員
+        unsubMembers = onSnapshot(groupMembersDoc(), (d) => {
+            if (d.exists() && d.data().list) {
+                members = d.data().list;
+                renderMembersUI();
+            }
+        });
+    }
+
+    window.leaveGroup = function() {
+        if (!confirm("確定要離開此群組嗎？（資料不會消失，之後可用邀請碼重新加入）")) return;
+        if (unsubTx) unsubTx();
+        if (unsubMembers) unsubMembers();
+        currentGroupCode = null;
+        members = [];
+        txList = [];
+        sessionStorage.removeItem('groupCode');
+        sessionStorage.removeItem('groupName');
+        document.getElementById('appPage').style.display = 'none';
+        document.getElementById('loginPage').style.display = 'flex';
+        document.getElementById('joinCodeInput').value = '';
+        document.getElementById('newGroupName').value = '';
+        document.getElementById('newGroupResult').style.display = 'none';
+    };
+
+    window.copyCurrentCode = function() {
+        navigator.clipboard.writeText(currentGroupCode).then(() => alert("✅ 邀請碼已複製：" + currentGroupCode));
+    };
+
+    // ════════════════════════════════════════
+    //  成員管理
+    // ════════════════════════════════════════
+    async function saveMembers() {
+        await setDoc(groupMembersDoc(), { list: members });
+    }
+
+    window.addMember = function() {
         const nameInput = document.getElementById('newMemberName');
         const name = nameInput.value.trim();
         if (!name) return;
-        if (members.includes(name)) {
-            alert("該成員名字已經在群組裡囉！");
-            return;
-        }
+        if (members.includes(name)) { alert("該成員名字已經在群組裡囉！"); return; }
         members.push(name);
-        localStorage.setItem('sm_members', JSON.stringify(members));
+        saveMembers();
         nameInput.value = "";
         renderMembersUI();
-    }
+    };
 
-    function removeMember(name) {
+    window.removeMember = function(name) {
         let isUsed = txList.some(r => r.payer === name || (r.shares && r.shares[name] > 0));
         if (isUsed) {
-            alert(`⚠️ 無法刪除「${name}」！因為在右側的消費明細中，此人已有相關的帳務紀錄。請先刪除或修改相關帳務。`);
+            alert(`⚠️ 無法刪除「${name}」！此人已有相關帳務紀錄。`);
             return;
         }
         if (confirm(`確定要將「${name}」從群組成員中移除嗎？`)) {
             members = members.filter(m => m !== name);
-            localStorage.setItem('sm_members', JSON.stringify(members));
+            saveMembers();
             renderMembersUI();
         }
-    }
+    };
 
     function renderMembersUI() {
         const badgeArea = document.getElementById('memberListArea');
         badgeArea.innerHTML = "";
         members.forEach(m => {
-            badgeArea.innerHTML += `
-                <span class="member-badge">
-                    ${m}
-                    <button class="remove-member-btn" onclick="removeMember('${m}')">✕</button>
-                </span>`;
+            badgeArea.innerHTML += `<span class="member-badge">${m}<button class="remove-member-btn" onclick="removeMember('${m}')">✕</button></span>`;
         });
 
         const payerSelect = document.getElementById('payer');
-        const currentPayerVal = payerSelect.value;
+        const cur = payerSelect.value;
         payerSelect.innerHTML = "";
-        members.forEach(m => {
-            payerSelect.innerHTML += `<option value="${m}">${m}</option>`;
-        });
-        if (members.includes(currentPayerVal)) {
-            payerSelect.value = currentPayerVal;
-        } else if (members.length > 0) {
-            payerSelect.value = members[0];
-        }
+        members.forEach(m => payerSelect.innerHTML += `<option value="${m}">${m}</option>`);
+        if (members.includes(cur)) payerSelect.value = cur;
 
         const weightArea = document.getElementById('dynamicWeightArea');
         weightArea.innerHTML = "";
@@ -258,84 +539,74 @@
         });
     }
 
-    function addRecord() {
+    // ════════════════════════════════════════
+    //  新增 / 修改帳務
+    // ════════════════════════════════════════
+    window.addRecord = async function() {
         const itemDate = document.getElementById('itemDate').value || new Date().toISOString().split('T')[0];
         const itemType = document.getElementById('itemType').value.trim() || "未命名消費";
         const totalAmount = parseFloat(document.getElementById('totalAmount').value);
         const payer = document.getElementById('payer').value;
         const errorMsg = document.getElementById('errorMsg');
-
         errorMsg.style.display = "none";
 
         if (isNaN(totalAmount) || totalAmount <= 0) {
-            errorMsg.innerText = "⚠️ 錯誤：總金額必須大於 0 元！";
+            errorMsg.innerText = "⚠️ 總金額必須大於 0 元！";
             errorMsg.style.display = "block";
             return;
         }
 
-        let participants = {};
-        let customAmts = {};
+        let participants = {}, customAmts = {};
         members.forEach(m => {
-            participants[m] = document.getElementById(`check_${m}`) ? document.getElementById(`check_${m}`).checked : false;
-            customAmts[m] = document.getElementById(`amt_${m}`) ? (parseFloat(document.getElementById(`amt_${m}`).value) || 0) : 0;
+            participants[m] = document.getElementById(`check_${m}`)?.checked ?? false;
+            customAmts[m] = parseFloat(document.getElementById(`amt_${m}`)?.value) || 0;
         });
 
         let finalShares = {};
         members.forEach(m => finalShares[m] = 0);
-
-        let hasCustom = Object.values(customAmts).some(amt => amt > 0);
+        const hasCustom = Object.values(customAmts).some(a => a > 0);
 
         if (hasCustom) {
-            let sum = Object.values(customAmts).reduce((a, b) => a + b, 0);
+            const sum = Object.values(customAmts).reduce((a, b) => a + b, 0);
             if (Math.abs(sum - totalAmount) > 0.1) {
-                errorMsg.innerText = `⚠️ 錯誤：自訂金額總和 (${sum}元) 不等於總金額 (${totalAmount}元)！`;
+                errorMsg.innerText = `⚠️ 自訂金額總和 (${sum}元) 不等於總金額 (${totalAmount}元)！`;
                 errorMsg.style.display = "block";
                 return;
             }
             finalShares = customAmts;
         } else {
-            let activeMembers = members.filter(m => participants[m]);
-            let count = activeMembers.length;
-            if (count === 0) {
-                errorMsg.innerText = "⚠️ 錯誤：至少要有一個人參與分帳！";
+            const active = members.filter(m => participants[m]);
+            if (active.length === 0) {
+                errorMsg.innerText = "⚠️ 至少要有一個人參與分帳！";
                 errorMsg.style.display = "block";
                 return;
             }
-            let avg = totalAmount / count;
-            activeMembers.forEach(m => finalShares[m] = avg);
+            const avg = totalAmount / active.length;
+            active.forEach(m => finalShares[m] = avg);
         }
 
-        let recordData = {
-            date: itemDate,
-            item: itemType,
-            total: totalAmount,
-            payer: payer,
-            shares: finalShares,
-            raw: { participants, customAmts }
-        };
+        setStatus("⏳ 儲存中...", "loading");
+        const recordData = { date: itemDate, item: itemType, total: totalAmount, payer, shares: finalShares, raw: { participants, customAmts } };
 
         if (editIndex === -1) {
-            txList.push(recordData);
+            const newId = Date.now().toString();
+            await setDoc(doc(db, "groups", currentGroupCode, "transactions", newId), recordData);
         } else {
-            txList[editIndex] = recordData;
+            const existingId = txList[editIndex].id;
+            await setDoc(doc(db, "groups", currentGroupCode, "transactions", existingId), recordData);
             editIndex = -1;
-            document.getElementById('formHeader').innerText = "✍️ 2. 記帳輸入區";
-            document.getElementById('formHeader').classList.replace('text-warning', 'text-primary');
-            document.getElementById('submitBtnArea').innerHTML = `<button class="btn btn-custom w-100 fw-bold" onclick="addRecord()">➕ 新增此筆帳務</button>`;
+            resetFormHeader();
         }
-
-        localStorage.setItem('sm_txList', JSON.stringify(txList));
-        updateHistoryTable();
         clearForm();
-    }
+    };
 
     function updateHistoryTable() {
         const tbody = document.getElementById('historyTable');
         tbody.innerHTML = "";
         txList.forEach((r, index) => {
-            let displayKeys = Object.keys(r.shares).filter(k => members.includes(k));
-            let shareText = displayKeys.map(m => `${m}:${Math.round(r.shares[m] || 0)}`).join(' | ');
-            let row = `<tr>
+            const displayKeys = Object.keys(r.shares || {}).filter(k => members.includes(k));
+            const shareText = displayKeys.map(m => `${m}:${Math.round(r.shares[m] || 0)}`).join(' | ');
+            tbody.innerHTML += `<tr>
                 <td class="small text-muted">${r.date.substring(5)}</td>
                 <td><strong>${r.item}</strong></td>
                 <td>$${r.total}</td>
@@ -348,55 +619,109 @@
                     </div>
                 </td>
             </tr>`;
-            tbody.innerHTML += row;
         });
     }
 
-    function startEdit(index) {
+    window.startEdit = function(index) {
         editIndex = index;
         const r = txList[index];
         document.getElementById('itemDate').value = r.date;
         document.getElementById('itemType').value = r.item;
         document.getElementById('totalAmount').value = r.total;
-        if (!members.includes(r.payer)) {
-            members.push(r.payer);
-            renderMembersUI();
-        }
         document.getElementById('payer').value = r.payer;
         members.forEach(m => {
             const chk = document.getElementById(`check_${m}`);
             const amt = document.getElementById(`amt_${m}`);
-            if (chk) chk.checked = (r.raw && r.raw.participants && r.raw.participants[m] !== undefined) ? r.raw.participants[m] : true;
-            if (amt) amt.value = (r.raw && r.raw.customAmts && r.raw.customAmts[m] > 0) ? r.raw.customAmts[m] : "";
+            if (chk) chk.checked = r.raw?.participants?.[m] ?? true;
+            if (amt) amt.value = r.raw?.customAmts?.[m] > 0 ? r.raw.customAmts[m] : "";
         });
         document.getElementById('formHeader').innerText = `📝 正在修改第 ${index + 1} 筆帳務`;
         document.getElementById('formHeader').classList.replace('text-primary', 'text-warning');
         document.getElementById('submitBtnArea').innerHTML = `
             <div class="row g-2">
-                <div class="col-8">
-                    <button class="btn btn-warning w-100 fw-bold text-white" onclick="addRecord()">💾 儲存修改</button>
-                </div>
-                <div class="col-4">
-                    <button class="btn btn-secondary w-100 fw-bold" onclick="cancelEdit()">取消</button>
-                </div>
+                <div class="col-8"><button class="btn btn-warning w-100 fw-bold text-white" onclick="addRecord()">💾 儲存修改</button></div>
+                <div class="col-4"><button class="btn btn-secondary w-100 fw-bold" onclick="cancelEdit()">取消</button></div>
             </div>`;
-    }
+    };
 
-    function cancelEdit() {
+    window.cancelEdit = function() {
         editIndex = -1;
+        resetFormHeader();
+        clearForm();
+    };
+
+    window.deleteRecord = async function(index) {
+        if (confirm(`確定要刪除「${txList[index].item}」嗎？`)) {
+            setStatus("⏳ 刪除中...", "loading");
+            await deleteDoc(doc(db, "groups", currentGroupCode, "transactions", txList[index].id));
+        }
+    };
+
+    window.clearAllData = async function() {
+        if (confirm("⚠️ 這將刪除本群組所有帳務記錄！確定要清空嗎？")) {
+            setStatus("⏳ 清空中...", "loading");
+            const snap = await getDocs(groupTxCol());
+            for (const d of snap.docs) await deleteDoc(d.ref);
+            members = [];
+            await saveMembers();
+            document.getElementById('settlementResult').style.display = "none";
+            resetFormHeader();
+            clearForm();
+        }
+    };
+
+    // ════════════════════════════════════════
+    //  清算
+    // ════════════════════════════════════════
+    window.calculateSettlement = function() {
+        if (txList.length === 0) { alert("目前還沒有任何記帳紀錄喔！"); return; }
+
+        let balance = {};
+        members.forEach(m => balance[m] = 0);
+
+        txList.forEach(tx => {
+            if (balance[tx.payer] === undefined) balance[tx.payer] = 0;
+            balance[tx.payer] += parseFloat(tx.total) || 0;
+            for (let person in tx.shares) {
+                if (balance[person] === undefined) balance[person] = 0;
+                balance[person] -= parseFloat(tx.shares[person]) || 0;
+            }
+        });
+
+        let creditors = [], debtors = [];
+        for (let person in balance) {
+            const amt = Math.round(balance[person]);
+            if (amt > 0) creditors.push({ name: person, amount: amt });
+            else if (amt < 0) debtors.push({ name: person, amount: -amt });
+        }
+
+        let results = [];
+        while (creditors.length > 0 && debtors.length > 0) {
+            creditors.sort((a, b) => b.amount - a.amount);
+            debtors.sort((a, b) => b.amount - a.amount);
+            const creditor = creditors[0], debtor = debtors[0];
+            const transferAmt = Math.min(creditor.amount, debtor.amount);
+            if (transferAmt > 0) results.push({ from: debtor.name, to: creditor.name, amount: transferAmt });
+            creditor.amount -= transferAmt;
+            debtor.amount -= transferAmt;
+            creditors = creditors.filter(c => c.amount > 0.1);
+            debtors = debtors.filter(d => d.amount > 0.1);
+        }
+
+        const contentDiv = document.getElementById('resultContent');
+        contentDiv.innerHTML = results.length > 0
+            ? results.map(r => `<div class="result-box">💸 <strong>${r.from}</strong> 應轉帳給 <strong>${r.to}</strong>：<span class="text-danger fw-bold">$${r.amount}</span> 元</div>`).join('')
+            : `<div class="alert alert-success">🎉 大家金額剛好平分，誰都不欠誰！</div>`;
+        document.getElementById('settlementResult').style.display = "block";
+    };
+
+    // ════════════════════════════════════════
+    //  輔助函式
+    // ════════════════════════════════════════
+    function resetFormHeader() {
         document.getElementById('formHeader').innerText = "✍️ 2. 記帳輸入區";
         document.getElementById('formHeader').classList.replace('text-warning', 'text-primary');
         document.getElementById('submitBtnArea').innerHTML = `<button class="btn btn-custom w-100 fw-bold" onclick="addRecord()">➕ 新增此筆帳務</button>`;
-        clearForm();
-    }
-
-    function deleteRecord(index) {
-        if (confirm(`確定要刪除「${txList[index].item}」這一筆帳務嗎？`)) {
-            if (editIndex === index) cancelEdit();
-            txList.splice(index, 1);
-            localStorage.setItem('sm_txList', JSON.stringify(txList));
-            updateHistoryTable();
-        }
     }
 
     function clearForm() {
@@ -411,85 +736,23 @@
         document.getElementById('errorMsg').style.display = "none";
     }
 
-    function clearAllData() {
-        if (confirm("⚠️ 警告：這將會刪除所有歷史消費明細！成員名單將會重置。確定要清空嗎？")) {
-            localStorage.clear();
-            members = ["冠佑", "育明", "淮宇"];
-            txList = [];
-            editIndex = -1;
-            renderMembersUI();
-            updateHistoryTable();
-            document.getElementById('settlementResult').style.display = "none";
-            document.getElementById('formHeader').innerText = "✍️ 2. 記帳輸入區";
-            document.getElementById('formHeader').classList.replace('text-warning', 'text-primary');
-            document.getElementById('submitBtnArea').innerHTML = `<button class="btn btn-custom w-100 fw-bold" onclick="addRecord()">➕ 新增此筆帳務</button>`;
+    // ════════════════════════════════════════
+    //  頁面載入：自動恢復 session
+    // ════════════════════════════════════════
+    function initApp() {
+        const savedCode = sessionStorage.getItem('groupCode');
+        const savedName = sessionStorage.getItem('groupName');
+        if (savedCode) {
+            loadGroup(savedCode, savedName || "群組");
         }
     }
 
-    function calculateSettlement() {
-        if (txList.length === 0) {
-            alert("目前還沒有任何記帳紀錄喔！");
-            return;
-        }
-
-        // 計算每個人的淨餘額（付出 - 應分攤）
-        let balance = {};
-        members.forEach(m => { balance[m] = 0; });
-
-        txList.forEach(tx => {
-            const payer = tx.payer;
-            const shares = tx.shares || {};
-            if (balance[payer] === undefined) balance[payer] = 0;
-            balance[payer] += parseFloat(tx.total) || 0;
-            for (let person in shares) {
-                if (balance[person] === undefined) balance[person] = 0;
-                balance[person] -= parseFloat(shares[person]) || 0;
-            }
-        });
-
-        let creditors = [];
-        let debtors = [];
-        for (let person in balance) {
-            let amt = Math.round(balance[person]);
-            if (amt > 0) creditors.push({ name: person, amount: amt });
-            else if (amt < 0) debtors.push({ name: person, amount: -amt });
-        }
-
-        let results = [];
-
-        // 雙指針對沖演算法（最少交易次數清算）
-        while (creditors.length > 0 && debtors.length > 0) {
-            creditors.sort((a, b) => b.amount - a.amount);
-            debtors.sort((a, b) => b.amount - a.amount);
-            let creditor = creditors[0];
-            let debtor = debtors[0];
-            let transferAmt = Math.min(creditor.amount, debtor.amount);
-            if (transferAmt > 0) {
-                results.push({ from: debtor.name, to: creditor.name, amount: transferAmt });
-            }
-            creditor.amount -= transferAmt;
-            debtor.amount -= transferAmt;
-            creditors = creditors.filter(c => c.amount > 0.1);
-            debtors = debtors.filter(d => d.amount > 0.1);
-        }
-
-        const resultDiv = document.getElementById('settlementResult');
-        const contentDiv = document.getElementById('resultContent');
-        contentDiv.innerHTML = "";
-
-        if (results.length > 0) {
-            results.forEach(res => {
-                contentDiv.innerHTML += `
-                    <div class="result-box">
-                        💸 <strong>${res.from}</strong> 應轉帳給 <strong>${res.to}</strong>：
-                        <span class="text-danger fw-bold">$${res.amount}</span> 元
-                    </div>`;
-            });
-        } else {
-            contentDiv.innerHTML = `<div class="alert alert-success">🎉 太神了！大家金額剛好平分，誰都不欠誰！</div>`;
-        }
-        resultDiv.style.display = "block";
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+        initApp();
     }
 </script>
+
 </body>
 </html>
